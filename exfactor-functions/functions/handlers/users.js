@@ -17,7 +17,7 @@ exports.signup = (req, res) => {
     }
 
     const {valid, errors} = validateSignupData(newUser);
-    
+  
     if(!valid) return res.status(400).json(errors);
     
     let token, userId;
