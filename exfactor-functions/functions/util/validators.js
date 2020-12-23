@@ -1,5 +1,5 @@
 const isEmpty = (string) => {
-    if(string.trim() == ''){
+    if(string.trim() === ''){
       return true;
     }
     else{
@@ -44,6 +44,8 @@ const isEmpty = (string) => {
     }
   }
 
+  
+
   exports.validateLoginData = (data) => {
     let errors ={};
     if(isEmpty(data.email)) errors.email = 'Must not be empty';
@@ -53,5 +55,22 @@ const isEmpty = (string) => {
         errors,
         valid: Object.keys(errors).length > 0 ? true: false
     }
+  }
+
+  exports.reduceUserDetails = (data) => {
+    let userDetails = {};
+    if(!isEmpty(data.bio.trim())){
+      userDetails.bio = data.bio;
+    } 
+    if(!isEmpty(data.website.trim())){
+      if(data.website.trim().substring(0, 4) !== 'http'){
+         userDetails.website = `https://${data.website.trim()}`;
+      }else{
+        userDetails.website = data.website;
+      }
+    }
+    if(!isEmpty(data.location.trim())) userDetails.location = data.location;
+    
+    return userDetails;
   }
   

@@ -5,7 +5,7 @@ const firebase = require('firebase');
 
 firebase.initializeApp(config);
 
-const { validateSignupData, validateLoginData } = require('../util/validators');
+const { validateSignupData, validateLoginData, reduceUserDetails } = require('../util/validators');
 
 
 exports.signup = (req, res) => {
@@ -92,6 +92,19 @@ exports.signup = (req, res) => {
     })
   };
 
+  exports.addUserDetails = (req, res) => {
+    let userDetails = reduceUserDetails(req.body);
+    db.doc(`users/${req.user.handle}`)
+    .update(userDetails)
+    .then(() => {
+      return res.json({message: 'Details added successfully'});
+    })
+    .catch((err) => {
+      console.error(err);
+      return res.status(500).json({error: err.code});
+    })
+  }
+
   exports.uploadImage = (req, res) => {
     const BusBoy = require('busboy');
     const fs = require('fs');
@@ -104,10 +117,10 @@ exports.signup = (req, res) => {
     let imageToBeUploaded = {};
 
     busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
-
-      console.log(fieldname);
-      console.log(filename);
-      console.log(mimetype);
+      if(mimetype !== 'image/png' && mimetype !== 'image/jpeg' ){
+        return res.status(400).json({ error: 'Wrong file type submitted'});
+      }
+      
       const imageExtension = filename.split('.')[filename.split('.').length - 1];
       imageFileName = `${Math.round(Math.random()*100000000)}.${imageExtension}`;
       const filepath = path.join(os.tmpdir(), imageFileName);
@@ -131,7 +144,7 @@ exports.signup = (req, res) => {
         return db.doc(`/users/${req.user.handle}`).update({imageUrl});
       })
       .then(() => {
-        return res.json({message: 'image uploaded successfully'});
+        return res.json({message: 'Image uploaded successfully'});
       })
       .catch(err => {
         console.error(err);
